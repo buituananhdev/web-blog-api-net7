@@ -3,9 +3,11 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using WebBlog.API.Helpers;
 using WebBlog.API.Validators;
+using WebBlog.Data.DTOs;
+using WebBlog.Service.Services.AuthService;
 using WebBlog.Service.Services.UserService;
+using WebBlog.Utility.Languages;
 
 namespace WebBlog.API.Controllers
 {
@@ -16,92 +18,39 @@ namespace WebBlog.API.Controllers
         private readonly DataContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly IUserService _UserService;
-        public AuthController(DataContext dbContext, IConfiguration configuration, IUserService userService)
+        private readonly IAuthService _AuthService;
+
+        public AuthController(DataContext dbContext, IConfiguration configuration, IUserService userService, IAuthService authService)
         {
             _dbContext = dbContext;
             _configuration = configuration;
             _UserService = userService;
+            _AuthService = authService;
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult> Login([FromBody] User request)
+        public async Task<ActionResult> Login([FromBody] LoginDTO request)
         {
+
             bool isEmailExists = await _UserService.IsEmailExists(request.Email);
 
             if (!isEmailExists)
             {
-                return BadRequest(new { status = "failure", message = "Email không tồn tại trong hệ thống" });
+                return BadRequest(GetText.GetCodeStatus("0001"));
             }
 
-            var validator = new LoginValidator();
-            var validationErrors = validator.Validate(request);
-
-            if (validationErrors.Count > 0)
-            {
-                return BadRequest(new { status = "failure", errors = validationErrors });
-            }
-
-            // Kiểm tra thông tin đăng nhập của người dùng từ database
             var user = _dbContext.Users.SingleOrDefault(u => u.Email == request.Email);
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
             {
-                return BadRequest(new { status = "failure", message = "Incorrect email or password!" });
+                return BadRequest(GetText.GetCodeStatus("0002"));
             }
 
-            if(user.IsActive == 0)
+            if (user.IsActive == 0)
             {
-                return BadRequest(new { status = "failure", message = "Tài khoản đã bị xóa, hãy liên hệ admin để được khôi phục lại!" });
+                return BadRequest(GetText.GetCodeStatus("0003"));
             }
 
-            // Tạo token và refresh token
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-                _configuration.GetSection("AppSettings:SecretKey").Value!));
-
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-                    new Claim("UserID", user.UserId),
-                    new Claim(ClaimTypes.Name, user.Fullname),
-                    new Claim(ClaimTypes.Email, user.Email)
-                }),
-                Expires = DateTime.UtcNow.AddDays(1),
-                SigningCredentials = creds
-            };
-            var jwtToken = tokenHandler.CreateToken(tokenDescriptor);
-            var refreshToken = Guid.NewGuid().ToString();
-
-            // Lưu token và refresh token vào cơ sở dữ liệu
-            DateTimeOffset expiresAt = DateTimeOffset.UtcNow.AddDays(1);
-            DateTime dateTime = DateTime.Now;
-            var tokenEntity = new Token
-            {
-                Id = UUID.Generate(),
-                Email = user.Email,
-                AccessToken = tokenHandler.WriteToken(jwtToken),
-                RefreshToken = refreshToken,
-                ExpirationTime = expiresAt.ToUnixTimeSeconds(),
-                CreatedAt = DateTimeHelper.ConvertToUnixTimeSeconds(dateTime)
-        };
-            _dbContext.Tokens.Add(tokenEntity);
-            _dbContext.SaveChanges();
-
-            // Trả về token và refresh token cho client
-
-            return Ok(new
-            {
-                status = "success",
-                data = new
-                {
-                    access_token = tokenHandler.WriteToken(jwtToken),
-                    refresh_token = refreshToken,
-                    expires_in = tokenEntity.ExpirationTime,
-                    created_at = tokenEntity.CreatedAt,
-                }
-            });
+            return Ok();
         }
 
         [HttpPost("logout")]
@@ -111,7 +60,7 @@ namespace WebBlog.API.Controllers
             var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
             if (string.IsNullOrEmpty(token))
             {
-                return BadRequest(new { status = "failure", message = "Invalid token" });
+                return BadRequest(GetText.GetCodeStatus("0004"));
             }
 
             // Validate the token and extract the username

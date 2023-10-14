@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using WebBlog.API.Helpers;
 using WebBlog.Data.DTOs;
 using WebBlog.Service.Services.CommentService;
+using WebBlog.Utility.Helpers;
 
 namespace WebBlog.API.Controllers
 {
@@ -17,10 +15,10 @@ namespace WebBlog.API.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<ActionResult<List<CommentDTO>>> AddComment(Comment comment)
+        public async Task<ActionResult<List<CommentDTO>>> AddComment(CommentDTO comment)
         {
             try
-            {   
+            {
                 var userId = User.Claims.FirstOrDefault(c => c.Type == "UserID")?.Value;
                 comment.CommentId = UUID.Generate();
                 comment.UserId = userId;

@@ -1,7 +1,6 @@
 ﻿using System.Text.RegularExpressions;
-using WebBlog.Data.Models;
 
-namespace WebBlog.API.Validators
+namespace WebBlog.Utility.Validators
 {
     public class TokenValidator
     {

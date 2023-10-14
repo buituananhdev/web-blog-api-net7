@@ -4,7 +4,9 @@ using Microsoft.IdentityModel.Tokens;
 using WebBlog.API.Validators;
 using WebBlog.Data.DTOs;
 using WebBlog.Service.Services.UserService;
-
+using WebBlog.Utility.Languages;
+using WebBlog.Utility.Utilities;
+using WebBlog.Utility.Validators;
 namespace WebBlog.API.Controllers
 {
     [Route("api/users")]
@@ -17,7 +19,7 @@ namespace WebBlog.API.Controllers
 
         [HttpPost]
         // Hàm thêm user
-        public async Task<ActionResult<List<UserDTO>>> Register(User user)
+        public async Task<ActionResult<List<UserDTO>>> Register(UserDTO user)
         {
             var validator = new UserValidator();
             var validationErrors = validator.Validate(user);
@@ -30,26 +32,12 @@ namespace WebBlog.API.Controllers
 
             if (isEmailExists)
             {
-                return BadRequest(new {status = "failure", message = "Email đã tồn tại trong hệ thống" });
+                return BadRequest(GetText.GetCodeStatus("0005"));
             }
-            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.Password);
-            user.Password = hashedPassword;
-            user.Avatar = "";
-            user.UserId = UUID.Generate();
-            user.IsActive = 1;
+            
             var result = await _UserService.Register(user);
-            var userDTO = new UserDTO
-            {
-                UserId = result.UserId,
-                Fullname = result.Fullname,
-                Describe = result.Describe,
-                Email = result.Email,
-                Password = result.Password,
-                Avatar = result.Avatar,
-                IsActive = result.IsActive
 
-            };
-            return Ok(new { status = "success", data = userDTO });
+            return result ? Ok(GetText.GetCodeStatus("S0001", "Registration")) : BadRequest(GetText.GetCodeStatus("F0006", "Registration"));
         }
 
         [HttpPatch("password/reset")]
@@ -61,7 +49,7 @@ namespace WebBlog.API.Controllers
 
             if (!isEmailExists)
             {
-                return BadRequest(new { status = "failure", message = "Email không tồn tại trong hệ thống" });
+                return BadRequest(GetText.GetCodeStatus("F0001"));
             }
 
             var validator = new UserValidator();
@@ -74,11 +62,11 @@ namespace WebBlog.API.Controllers
 
             if(body.Password != body.ConfirmPassword)
             {
-                return BadRequest(new { status = "failure", error = "Password not match!" });
+                return BadRequest(GetText.GetCodeStatus("F0009"));
             }
             string hashedPassword = BCrypt.Net.BCrypt.HashPassword(body.Password);
             await _UserService.ChangePassword(body.Email, hashedPassword);
-            return Ok(new { status = "success", message = "Change password successfully!" });
+            return Ok(GetText.GetCodeStatus("S0001", "Change password"));
         }
         
 
@@ -86,20 +74,12 @@ namespace WebBlog.API.Controllers
         // Func update user information
         public async Task<ActionResult<List<User>>> UpdateUser(string id, string avatar_url, string full_name, string describe)
         {
-            if (avatar_url.IsNullOrEmpty())
-            {
-                return BadRequest(new { status = "failure", error = "Avatar URL is required!" });
-            }
             if (full_name.IsNullOrEmpty())
             {
-                return BadRequest(new { status = "failure", error = "Fullname is required!" });
+                return BadRequest(GetText.GetCodeStatus("F0008", "Fullname"));
             }
             var result = await _UserService.UpdateUser(id, avatar_url, full_name, describe);
-            if (result is null)
-            {
-                return BadRequest(new { status = "failure", message = "User not found" });
-            }
-            return StatusCode(204, new { status = "success", message = "Update user information successfully" });
+            return result ? StatusCode(204, GetText.GetCodeStatus("S0001", "Update user")) : BadRequest(GetText.GetCodeStatus("F0007", "User"));
         }
 
         [HttpPatch("send_request/{id}")]
@@ -109,18 +89,16 @@ namespace WebBlog.API.Controllers
             var result = await _UserService.SendRequest(id);
             if (result is null)
             {
-                return BadRequest(new { status = "failure", message = "User not found" });
+                return BadRequest(GetText.GetCodeStatus("F0007", "User"));
             }
-            string message = "";
             if(result.IsActive == 1)
             {
-                message = "Active user successfully";
+                return Ok(GetText.GetCodeStatus("S0001", "Active user"));
             } 
             else
             {
-                message = "Deactive user successfully";
+                return Ok(GetText.GetCodeStatus("S0001", "Deactive user"));
             }
-            return Ok(new { status = "success", message = message });
         }
 
         [HttpGet("{id}")]
@@ -129,20 +107,10 @@ namespace WebBlog.API.Controllers
             var result = await _UserService.GetInformationUser(id);
             if (result is null)
             {
-                return BadRequest(new { status = "failure", message = "User not found" });
+                return BadRequest(GetText.GetCodeStatus("F0007", "User"));
             }
-            var userDTO = new UserDTO
-            {
-                UserId = result.UserId,
-                Fullname = result.Fullname,
-                Describe = result.Describe,
-                Email = result.Email,
-                Password = result.Password,
-                Avatar = result.Avatar,
-                IsActive = result.IsActive
 
-            };
-            return Ok(new { status = "success", data = userDTO });
+            return Ok(new { status = "success", data = result });
         }
 
         [HttpGet]
@@ -151,21 +119,10 @@ namespace WebBlog.API.Controllers
             var result = await _UserService.GetListUsers();
             if (result is null)
             {
-                return BadRequest(new { status = "failure", message = "User not found" });
+                return BadRequest(GetText.GetCodeStatus("F0007", "User"));
             }
 
-            var userDTOs = result.Select(user => new UserDTO
-            {
-                UserId = user.UserId,
-                Fullname = user.Fullname,
-                Describe = user.Describe,
-                Email = user.Email,
-                Password = user.Password,
-                Avatar = user.Avatar,
-                IsActive = user.IsActive
-            }).ToList();
-
-            return Ok(new { status = "success", data = userDTOs });
+            return Ok(new { status = "success", data = result });
         }
     }
 }

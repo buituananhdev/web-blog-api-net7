@@ -1,4 +1,4 @@
-﻿namespace WebBlog.API.Helpers
+﻿namespace WebBlog.Utility.Helpers
 {
     public class DateTimeHelper
     {

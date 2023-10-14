@@ -2,10 +2,11 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
-using WebBlog.API.Helpers;
+using WebBlog.Utility.Helpers;
 using WebBlog.Data.DTOs;
 using WebBlog.Service.Services.CommentService;
 using WebBlog.Service.Services.PostService;
+using WebBlog.Utility.Utilities;
 
 namespace WebBlog.API.Controllers
 {
@@ -60,8 +61,7 @@ namespace WebBlog.API.Controllers
                 }
 
                 var comments = await _CommentService.GetCommentsForPost(id);
-                var tmp = new List<Comment>();
-                tmp = comments;
+
                 // Chuyển đổi Post thành PostDto
                 var postDto = new PostDTO
                 {
@@ -72,7 +72,7 @@ namespace WebBlog.API.Controllers
                     ViewCount = post.ViewCount,
                     Timestamp = post.Timestamp,
                     PostType = post.PostType,
-                    Comments = tmp
+                    Comments = comments
                 };
 
                 return Ok(new { status = "success", data = postDto });
