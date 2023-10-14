@@ -1,10 +1,11 @@
 ﻿using System.Text.RegularExpressions;
+using WebBlog.Data.DTOs;
 
-namespace WebBlog.API.Validators
+namespace WebBlog.Utility.Validators
 {
     public class UserValidator
     {
-        public List<string> Validate(User user)
+        public List<string> Validate(UserDTO user)
         {
             var errors = new List<string>();
 

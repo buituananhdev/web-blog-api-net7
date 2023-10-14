@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using WebBlog.API.Helpers;
+using WebBlog.Utility.Helpers;
 using WebBlog.Service.Services.VoteService;
 
 namespace WebBlog.API.Controllers

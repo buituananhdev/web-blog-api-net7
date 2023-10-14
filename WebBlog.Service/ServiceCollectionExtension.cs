@@ -1,9 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using WebBlog.Service.Services.AuthService;
 using WebBlog.Service.Services.CommentService;
 using WebBlog.Service.Services.FileService;
 using WebBlog.Service.Services.FollowerService;
@@ -18,6 +14,7 @@ namespace WebBlog.Service
     {
         public static IServiceCollection AddWebBlogService(this IServiceCollection services)
         {
+            services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ICommentService, CommentService>();
             services.AddScoped<IFollowerService, FollowerService>();
             services.AddScoped<IMessageService, MessageService>();

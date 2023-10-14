@@ -1,4 +1,4 @@
-﻿namespace WebBlog.API.Utilities
+﻿namespace WebBlog.Utility.Utilities
 {
     public class UUID
     {

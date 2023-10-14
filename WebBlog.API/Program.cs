@@ -1,12 +1,12 @@
-global using WebBlog.Service;
-global using WebBlog.API.Utilities;
 global using WebBlog.Data.Data;
 global using WebBlog.Data.Models;
+global using WebBlog.Utility.Utilities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using WebBlog.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,12 +23,13 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.SuppressModelStateInvalidFilter = true; // Disable automatic model validation
 });
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
 builder.Services.AddDbContext<DataContext>();
 builder.Services.AddWebBlogService();
 
 var configuration = builder.Configuration;
 
-var key = Encoding.ASCII.GetBytes(configuration.GetSection("AppSettings:SecretKey").Value!);
+var key = Encoding.ASCII.GetBytes(configuration.GetSection("AppSettings:AccessTokenSecretKey").Value!);
 
 builder.Services.AddAuthentication(x =>
 {

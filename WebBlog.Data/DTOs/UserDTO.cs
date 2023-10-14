@@ -2,8 +2,6 @@
 {
     public class UserDTO
     {
-        public string UserId { get; set; } = null!;
-
         public string Fullname { get; set; } = null!;
 
         public string? Describe { get; set; }
@@ -14,6 +12,5 @@
 
         public string? Avatar { get; set; }
 
-        public int? IsActive { get; set; }
     }
 }

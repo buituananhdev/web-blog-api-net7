@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using WebBlog.Data.Models;
 
 namespace WebBlog.API.Validators
 {

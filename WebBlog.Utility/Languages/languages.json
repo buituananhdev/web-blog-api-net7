@@ -1,0 +1,42 @@
+{
+    "F0001": {
+        "status": "failure",
+        "message": "Email does not exist in the system!"
+    },
+    "F0002": {
+        "status": "failure",
+        "message": "Incorrect email or password!"
+    },
+    "F0003": {
+        "status": "failure",
+        "message": "Account has been deleted, please contact admin to restore it!"
+    },
+    "F0004": {
+        "status": "failure",
+        "message": "Invalid token!"
+    },
+    "F0005": {
+        "status": "failure",
+        "message": "Email already exists in the system!"
+    },
+    "F0006": {
+        "status": "failure",
+        "message": " failed!"
+    },
+    "F0007": {
+        "status": "failure",
+        "message": " not found!"
+    },
+    "F0008": {
+        "status": "failure",
+        "message": " is required!"
+    },
+    "F0009": {
+        "status": "failure",
+        "message": "Password not match!"
+    },
+    "S0001": {
+        "status": "success",
+        "message": " successful!"
+    }
+}

@@ -1,11 +1,12 @@
-﻿using WebBlog.Data.Models;
+﻿using WebBlog.Data.DTOs;
+using WebBlog.Data.Models;
 
 namespace WebBlog.Service.Services.CommentService
 {
     public interface ICommentService
     {
         Task<List<Comment>> GetCommentsForPost(string postID);
-        Task<Comment> AddComment(Comment comment);
-        Task<Comment> DeleteComment(string commentID);
+        Task<CommentDTO> AddComment(CommentDTO comment);
+        Task<CommentDTO> DeleteComment(string commentID);
     }
 }
