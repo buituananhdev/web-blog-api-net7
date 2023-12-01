@@ -1,12 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
-using WebBlog.Utility.Helpers;
 using WebBlog.Data.DTOs;
 using WebBlog.Service.Services.CommentService;
 using WebBlog.Service.Services.PostService;
-using WebBlog.Utility.Utilities;
+using WebBlog.Utility.Helpers;
 
 namespace WebBlog.API.Controllers
 {
@@ -16,10 +14,13 @@ namespace WebBlog.API.Controllers
     {
         private readonly IPostService _PostService;
         private readonly ICommentService _CommentService;
-        public PostController(IPostService PostService, ICommentService CommentService)
+        private readonly IMapper _mapper;
+
+        public PostController(IPostService PostService, ICommentService CommentService, IMapper mapper)
         {
             _PostService = PostService;
             _CommentService = CommentService;
+            _mapper = mapper;
         }
 
         [Authorize]
@@ -62,18 +63,8 @@ namespace WebBlog.API.Controllers
 
                 var comments = await _CommentService.GetCommentsForPost(id);
 
-                // Chuyển đổi Post thành PostDto
-                var postDto = new PostDTO
-                {
-                    PostId = post.PostId,
-                    Title = post.Title,
-                    Content = post.Content,
-                    Thumbnail = post.Thumbnail,
-                    ViewCount = post.ViewCount,
-                    Timestamp = post.Timestamp,
-                    PostType = post.PostType,
-                    Comments = comments
-                };
+                var postDto = _mapper.Map<PostDTO>(post);
+                postDto.Comments = comments;
 
                 return Ok(new { status = "success", data = postDto });
             }
@@ -84,7 +75,6 @@ namespace WebBlog.API.Controllers
             }
         }
 
-
         [HttpGet("popular")]
         public async Task<ActionResult<List<Post>>> GetPopularPosts(int limit = 10)
         {
@@ -92,7 +82,8 @@ namespace WebBlog.API.Controllers
             {
                 var posts = await _PostService.GetPopularPosts(limit);
                 return Ok(new { status = "success", data = posts });
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine(ex);
                 return StatusCode(500, new { status = "failure", message = "Loi server" });
@@ -103,7 +94,7 @@ namespace WebBlog.API.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<List<Post>>> DeletePost(string id = "")
         {
-            
+
             if (!User.Identity.IsAuthenticated)
             {
                 return BadRequest(new { status = "failure", message = "You don't have permission to access this page" });
@@ -120,7 +111,7 @@ namespace WebBlog.API.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
-                return StatusCode(500, new { status = "failure", message = "Loi server"});
+                return StatusCode(500, new { status = "failure", message = "Loi server" });
             }
         }
 

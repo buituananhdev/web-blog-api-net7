@@ -3,9 +3,9 @@ using WebBlog.Data.DTOs;
 
 namespace WebBlog.API.Config
 {
-    public class AutoMapperConfig : Profile
+    public class AutoMapperProfile : Profile
     {
-        public AutoMapperConfig()
+        public AutoMapperProfile()
         {
             CreateMap<User, UserDTO>();
             CreateMap<UserDTO, User>();

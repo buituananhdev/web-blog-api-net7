@@ -1,11 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using WebBlog.API.Validators;
 using WebBlog.Data.DTOs;
 using WebBlog.Service.Services.UserService;
 using WebBlog.Utility.Languages;
-using WebBlog.Utility.Utilities;
 using WebBlog.Utility.Validators;
 namespace WebBlog.API.Controllers
 {
@@ -34,7 +31,7 @@ namespace WebBlog.API.Controllers
             {
                 return BadRequest(GetText.GetCodeStatus("0005"));
             }
-            
+
             var result = await _UserService.Register(user);
 
             return result ? Ok(GetText.GetCodeStatus("S0001", "Registration")) : BadRequest(GetText.GetCodeStatus("F0006", "Registration"));
@@ -60,7 +57,7 @@ namespace WebBlog.API.Controllers
                 return BadRequest(new { status = "failure", errors = validationErrors });
             }
 
-            if(body.Password != body.ConfirmPassword)
+            if (body.Password != body.ConfirmPassword)
             {
                 return BadRequest(GetText.GetCodeStatus("F0009"));
             }
@@ -68,7 +65,7 @@ namespace WebBlog.API.Controllers
             await _UserService.ChangePassword(body.Email, hashedPassword);
             return Ok(GetText.GetCodeStatus("S0001", "Change password"));
         }
-        
+
 
         [HttpPatch("update/{id}")]
         // Func update user information
@@ -82,19 +79,19 @@ namespace WebBlog.API.Controllers
             return result ? StatusCode(204, GetText.GetCodeStatus("S0001", "Update user")) : BadRequest(GetText.GetCodeStatus("F0007", "User"));
         }
 
-        [HttpPatch("send_request/{id}")]
+        [HttpPatch("user_status/{id}")]
         // Func active / Deactive user
-        public async Task<ActionResult<List<User>>> SendRequest(string id)
+        public async Task<ActionResult<List<User>>> updateUserStatus(string id)
         {
-            var result = await _UserService.SendRequest(id);
+            var result = await _UserService.updateUserStatus(id);
             if (result is null)
             {
                 return BadRequest(GetText.GetCodeStatus("F0007", "User"));
             }
-            if(result.IsActive == 1)
+            if (result.IsActive == 1)
             {
                 return Ok(GetText.GetCodeStatus("S0001", "Active user"));
-            } 
+            }
             else
             {
                 return Ok(GetText.GetCodeStatus("S0001", "Deactive user"));

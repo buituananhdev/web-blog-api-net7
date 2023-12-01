@@ -49,8 +49,8 @@ namespace WebBlog.API.Controllers
             {
                 return BadRequest(GetText.GetCodeStatus("0003"));
             }
-
-            return Ok();
+            TokenDTO token = await _AuthService.Login(user.UserId, user.Email);
+            return Ok(token);
         }
 
         [HttpPost("logout")]

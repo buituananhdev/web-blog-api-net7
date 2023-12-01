@@ -1,7 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using WebBlog.Data.Data;
 using WebBlog.Data.DTOs;
+using WebBlog.Data.Models;
 using WebBlog.Utility.Utilities;
 
 namespace WebBlog.Service.Services.AuthService
@@ -10,21 +13,33 @@ namespace WebBlog.Service.Services.AuthService
     {
         private readonly DataContext _context;
         private readonly IConfiguration _configuration;
-        public AuthService(DataContext context, IConfiguration configuration)
+        private readonly IMapper _mapper;
+        private readonly ILogger<AuthService> _logger;
+
+        public AuthService(DataContext context, IConfiguration configuration, IMapper mapper, ILogger<AuthService> logger)
         {
             _context = context;
             _configuration = configuration;
+            _mapper = mapper;
+            _logger = logger;
         }
-        public async Task<TokenDTO> Login(LoginDTO request)
+        public async Task<TokenDTO> Login(string id, string email)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
+            try
             {
-                return null;
+                TokenDTO tokenDTO = JwtTokenHelper.GenerateAccessToken(id, _configuration);
+                tokenDTO.Email = email;
+                Token token = _mapper.Map<Token>(tokenDTO);
+                token.Id = UUID.Generate();
+                _context.Add(token);
+                await _context.SaveChangesAsync();
+                return tokenDTO;
             }
-
-            TokenDTO token = JwtTokenHelper.GenerateAccessToken(user.UserId, _configuration);
-            return token;
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, "Login error");
+                throw;
+            }
         }
     }
 }

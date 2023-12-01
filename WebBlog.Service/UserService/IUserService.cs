@@ -12,6 +12,6 @@ namespace WebBlog.Service.Services.UserService
         Task<bool> ChangePassword(string email, string new_password);
         Task<bool> DeleteUser(string userID);
         Task<bool> IsEmailExists(string email);
-        Task<User> SendRequest(string userID);
+        Task<User> updateUserStatus(string userID);
     }
 }

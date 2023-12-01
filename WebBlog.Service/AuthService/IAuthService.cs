@@ -9,6 +9,6 @@ namespace WebBlog.Service.Services.AuthService
 {
     public interface IAuthService
     {
-        Task<TokenDTO> Login(LoginDTO request);
+        Task<TokenDTO> Login(string userId, string email);
     }
 }

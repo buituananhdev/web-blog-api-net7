@@ -1,61 +1,79 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WebBlog.Data.Models;
 using WebBlog.Data.Data;
+using Microsoft.Extensions.Logging;
 
 namespace WebBlog.Service.Services.VoteService
 {
     public class VoteService : IVoteService
     {
         private readonly DataContext _context;
-        public VoteService(DataContext context)
+        private readonly ILogger<VoteService> _logger;
+
+        public VoteService(DataContext context, ILogger<VoteService> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<bool> VoteDown(Vote votedown)
         {
-            var existingVote = await _context.Votes.FirstOrDefaultAsync(v => v.UserId == votedown.UserId && v.PostId == votedown.PostId);
-
-            if (existingVote != null)
+            try
             {
-                if (existingVote.VoteType == -1)
+                var existingVote = await _context.Votes.FirstOrDefaultAsync(v => v.UserId == votedown.UserId && v.PostId == votedown.PostId);
+
+                if (existingVote != null)
                 {
-                    return false;
+                    if (existingVote.VoteType == -1)
+                    {
+                        return false;
+                    }
+
+                    existingVote.VoteType = -1;
+                }
+                else
+                {
+                    votedown.VoteType = -1;
+                    _context.Votes.Add(votedown);
                 }
 
-                existingVote.VoteType = -1;
-            }
-            else
+                await _context.SaveChangesAsync();
+                return true;
+            } catch (Exception ex)
             {
-                votedown.VoteType = -1;
-                _context.Votes.Add(votedown);
+                _logger.LogError(ex, "Vote down error");
+                throw;
             }
-
-            await _context.SaveChangesAsync();
-            return true;
         }
 
         public async Task<bool> VoteUp(Vote voteup)
         {
-            var existingVote = await _context.Votes.FirstOrDefaultAsync(v => v.UserId == voteup.UserId && v.PostId == voteup.PostId);
-
-            if (existingVote != null)
+            try
             {
-                if (existingVote.VoteType == 1)
+                var existingVote = await _context.Votes.FirstOrDefaultAsync(v => v.UserId == voteup.UserId && v.PostId == voteup.PostId);
+
+                if (existingVote != null)
                 {
-                    return false;
+                    if (existingVote.VoteType == 1)
+                    {
+                        return false;
+                    }
+
+                    existingVote.VoteType = 1;
+                }
+                else
+                {
+                    voteup.VoteType = 1;
+                    _context.Votes.Add(voteup);
                 }
 
-                existingVote.VoteType = 1;
-            }
-            else
+                await _context.SaveChangesAsync();
+                return true;
+            } catch (Exception ex)
             {
-                voteup.VoteType = 1;
-                _context.Votes.Add(voteup);
+                _logger.LogError(ex, "Vote up error");
+                throw;
             }
-
-            await _context.SaveChangesAsync();
-            return true;
         }
     }
 }
